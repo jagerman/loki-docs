@@ -170,26 +170,15 @@ Skip step 3 in future updates.
 
 
 
-## How to access Loki daemon in interactive mode when running daemon as a service
+## How to prepare a service node registration command when running daemon as a service
 
-Whenever you want to access lokid in interactive mode, for example to run Service Node registration command,
-you have to connect to your server via SSH and:
+When lokid runs as a service, you can interact with it by running a second `lokid CMD` to talk to
+the running loki daemon, such as the `~/loki/lokid print_sn_status` command given above.  As of loki
+2.0.3, this includes the `prepare_registration` command:
 
-1. Stop the Loki daemon service: `sudo systemctl stop lokid.service` (see [NOTE](#note)).
+`~/loki/lokid prepare_registration`
 
-2. Start lokid from shell: `~/YOUR_LOKI_FILES_FOLDER/./lokid` (`~` character replaces user's home directory full path, do not skip it!).
-> For Testnet,  append the --testnet flag at the end of the command.
-
-3. Run the commands you need. For instance: `prepare_registration` if you are registering your Service Node.
-
-4. Quit lokid by typing: `exit` + ENTER
-
-5. Start the service again: `sudo systemctl start lokid.service`
-
-The following commands let us check that Loki daemon service is active again:
-
-- Test 1. Check lokid.service status: `systemctl status lokid.service`. The output should show you that lokid.service is loaded and active.
-
-- Test 2. Check the Service Node status (remember to replace YOUR_LOKI_FILES_FOLDER with your own):
-`~/YOUR_LOKI_FILES_FOLDER/lokid print_sn_status` (`~` character replaces user's home directory full path, do not skip it!).
-> For Testnet,  append the --testnet flag at the end of the command. 
+which will ask you various questions (amount to stake, list of contributors, etc.) to generate a
+registration command to copy and paste into your command-line wallet to submit the service node
+registration.  It is not necessary to stop or restart the service node before or after using this
+command.
