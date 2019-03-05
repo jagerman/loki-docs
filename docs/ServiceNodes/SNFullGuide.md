@@ -109,46 +109,30 @@ To connect to our VPS we will need to paste the IP address into the SSH client�
 
 A terminal window will now appear prompting for your log-in details, username(root) and password, which were provided by your VPS provider. When entering your password, nothing will visually appear in the terminal. This is normal. Hit enter when it’s typed or pasted, and you should be logged in to your VPS.
 
-#### Hot Tips for using the Console
+#### Create a non-root User
 
-Consoles don't work like the rest of your computer. Here are some basic tips for navigating your way around the command line!
-
-- Don't try copying something by using the usual Ctrl + C hotkey! If you want to copy something, do so by highlighting text and then right clicking it. Pasting works by right clicking a blank area in the console.
-  
-- If you want to kill a process or stop something from running, press Ctrl + C. This is why you shouldn't try copying something with this hotkey.
-
-- You can always check the directory you are in and its contents by typing `ls`.
-    
-- You can always return to your home directory by typing `cd ~`.
-
-- You can move into a given directory by typing `cd <name>` or move back up one level by typing `cd ..`.
-
-- PuTTY allows you to easily duplicate or restart a session by right clicking the top of the window. Handy if you’re trying to do a few things at once.
-
-Once we have logged in correctly to the VPS for the first time, the terminal may prompt us for a new password for our root account. The terminal will require you to enter the new password twice before we can start running commands.
-
-#### Optional - Set up Non-root User
-
-Best practice when running a public server is to not run your software as the root user. Although it is optional, we will create a non-root user to our VPS by running the following command.
+Best practice when running a public server is to not run your software as the root user.  Although
+it is possible to do everything as root, it is strongly recommended that you create a non-root user
+on our VPS by running the following command:
 
 ```
-sudo adduser <username>
+adduser <username>
 ```
 
-Replacing `<username>` with a name you will log-in with. For this user-guide we will use snode as our username.
+Replacing `<username>` with a name you will log-in with. For this user-guide we will use `snode` as our username.
 
 ```
-sudo adduser snode
+adduser snode
 ```
 
-The terminal will prompt you for a new password for our newly created user. Use a different password to the root password.
+The terminal will prompt you for a new password for our newly created user. Use a secure password that is different password from the root password.
 
-Once the password has been set, the terminal will prompt for a few details about the individual running the user. You can hit enter through each of the inputs as the details are not important for the purposes of running a Service Node.
+Once the password has been set, the terminal will prompt for a few details about the individual running the user. You can just hit enter through each of the inputs as the details are not important for the purposes of running a Service Node.
 
 Once that’s done, run the following two commands to give our new account admin privileges and to change to such account.
 
 ```
-sudo usermod -aG sudo snode
+usermod -aG sudo snode
 ```
 
 ```
@@ -156,6 +140,25 @@ su - snode
 ```
 
 Before we proceed further, it is advised to close your terminal and reopen PuTTY to set up a saved session with our snode user. Your SSH client will have a load and save session function. For PuTTY we will need to type in our VPS IP address again, on the same screen type snode under “Saved Session”. Click on “Data” under the drop-down menu “Connection”, and type in snode (or your username defined before) into the input box “Auto-login username”. Go back to your session screen, where we entered the IP address, and click “Save”. You can load this session whenever you want to check on your Service Node.
+
+
+#### Hot Tips for using the Console
+
+Consoles don't work like the rest of your computer. Here are some basic tips for navigating your way around the command line!
+
+- Don't try copying something by using the usual Ctrl + C hotkey! If you want to copy something, do so by highlighting text and then right clicking it. Pasting works by right clicking a blank area in the console.
+  
+- If you want to kill a process or stop something from running, press Ctrl + C. (This is why you shouldn't try copying something with this hotkey.)
+
+- You can always check the directory you are in by typing `pwd` and list its contents by typing `ls`.
+    
+- You can always return to your home directory by typing `cd`.
+
+- You can move into a given directory by typing `cd <name>` or move back up one level by typing `cd ..`.
+
+- PuTTY allows you to easily duplicate or restart a session by right clicking the top of the window. Handy if you’re trying to do a few things at once.
+
+Once we have logged in correctly to the VPS for the first time, the VPS may be configured to prompt for a new password for the root account. The terminal will require you to enter the new password twice before we can start running commands.  If you aren't prompted for a new `root` password but want to change it anyway, type `sudo passwd`.  Choose something very secure!
 
 #### Server Preparation Continued
 
@@ -177,7 +180,7 @@ If you are prompted at any time that a version of any file is available then cli
 
 <center>![Terminal window](../assets/snode2.JPG)</center>
 
-Alright, good to go. Our server is now set up, up to date, and is not running in root. On to the fun part!
+Alright, good to go. Our server is now set up, up to date, and is not running as root. On to the fun part!
 
 ### Step 3 - Download the Loki Binaries
 
