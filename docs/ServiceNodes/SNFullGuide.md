@@ -253,30 +253,72 @@ Excellent! We now have all of the necessary files to get this show on the road!
 
 ### Step 4 - Run the Service Node Daemon
 
-Let’s start up the daemon so we can sync the blockchain and register our Service Node.
+At this point you can run the Loki daemon directly in your terminal, but this is not a viable
+approach to running it as a service node: when you close PuTTY the program running inside it will
+*also* shut down, which is no good for a service node.
 
-The problem with the terminal we currently have open is that once we close PuTTY the program running inside it will also shut down. We can run a program called `screen` which can keep our Service Node running for 30 days without having to look at it all the time.
+Instead we will configure the Loki daemon as a system service which makes it automatically start up
+if the server reboots, and restarts it automatically if it crashes for some reason.
 
-The `screen` command is generally included in Ubuntu by default. If it isn’t, run `sudo apt install screen`. Running it opens up a terminal shell inside your session that will continue to run in the background once you detach it from the session. Type the following command:
+<ol>
+<li>Create the lokid.service file: <code>sudo nano /etc/systemd/system/lokid.service</code></li>
+<li>Copy the text below and paste it into your new file:</li>
+</ol>
+<pre><code>[Unit]
+Description=lokid service node
+After=network-online.target
 
-```
-screen
-```
+[Service]
+Type=simple
+User=snode
+ExecStart=/home/snode/loki-linux-x64-v2.0.3/lokid --non-interactive --service-node
+Restart=always
+RestartSec=30s
 
-Enter through the information that the terminal shell is providing until we get back a blank screen awaiting an input.
-
-To begin the Service Node daemon we must launch lokid with the flag `--service-node`.
-
-```
-./lokid --service-node
-```
-> If you are testing the daemon on testnet run the following command `./lokid --service-node --testnet`
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<ol start="3">
+<li>If you chose a username other than `snode` then change `snode` in the `User=` and `ExecStart=` lines to the alternative username.</li>
+</ol>
+<blockquote>
+(If you want to run a testnet service node, append ` --testnet` to the end of the ExecStart line.  Alternatively, if you want to be able to run both a testnet and mainnet service node simultaneously
+you can use two service files: `lokid.service` and `lokid-testnet.service` and add ` --testnet` to the `ExecStart=` line in the latter.  You would then use `lokid-testnet.service` instead of
+`lokid.service` in the commands below when you want to control the testnet service node.)
+</blockquote>
+<ol start="4">
+<li>
+<p>Once completed, save the file and quit nano:
+CTRL+X -&gt; Y -&gt; ENTER</p>
+</li>
+<li>
+<p>Reload systemd manager configuration (to make it re-read the new service file):
+<code>sudo systemctl daemon-reload</code></p>
+</li>
+<li>
+<p>Enable lokid.service so that it starts automatically upon boot:
+<code>sudo systemctl enable lokid.service</code></p>
+</li>
+<li>
+<p>Start lokid.service:
+<code>sudo systemctl start lokid.service</code></p>
+</li>
+</ol>
 
 The daemon will now start syncing. You won’t be able to do much if it hasn’t synced.
 
-To have the daemon to continue to run in the background hold Ctrl and type ad. To test your screen is still running in the background run the command `screen -ls` and take note of the port number at the start of the screen. This number will help us re-enter the daemon at future times. Typing `screen -x <port number>` will reattach the session so we can see what’s going on inside. Hold CTRL and type "ad" again to detach the screen once more.
+To watch the progress at any time you can use the following command (hit Ctrl-C when
+you are done watching it).  You should see it syncing the blockchain:
 
-For now, we can just leave the session open to see the daemon messages while we set up the Service Node. Just don't forget to use CTRL + A + D to detach the session before you close PuTTY later on.
+```
+sudo journalctl -u lokid.service -af
+```
+
+Alternatively you can ask the daemon to report its sync status using the following command:
+
+```
+~/loki-linux-x64-v2.0.3/lokid status
+```
 
 ### Step 5 - Get/Open A Wallet
 
@@ -302,9 +344,7 @@ If you are made of money and are willing to take the small risk of losing all of
 
 As such, it’ll probably save us time to open a second PuTTY session. You can do this by right clicking the window of the current PuTTY session and clicking “Duplicate Session.”
 
-Log in to your non-root user that we set up before, in our case snode, and once in we should open a new screen by typing `screen` and hitting return twice.
-
-Change directory to where our binaries are saved:
+Log in as the non-root user that we set up before, in our case `snode`, and launch the wallet using:
 
 ```
 cd loki-linux-x64-v2.0.3
@@ -374,16 +414,11 @@ If you want to run the Service Node as an individual you will require the follow
 
 Now if we have the two above items we can proceed to our daemon to register our Service Node.
 
-Type `screen -ls` to get a list of the screens running. Your daemon will normally be the bottom one on the list. To enter our daemon run the following command, replacing `<port number>` with the number that corresponds with your daemon.
+Log in (if not already connected) as the `snode` user on the VPS running the service node, then start
+the registration process by running the following interactive command:
 
 ```
-screen -x <port number>
-```
-
-To start the registration process we are going to run the following interactive command within the daemon terminal:
-
-```
-prepare_registration
+~/loki/lokid prepare_registration
 ```
 
 The daemon will output the current staking requirement and prompt you with an input to clarify if you are an individual staker or you will be running a pool. Type `y` and click enter as we will be the sole staker.
@@ -459,16 +494,11 @@ The Operator will need to have:
 
 Now if we have the three/four above items we can proceed to our daemon to register our Service Node.
 
-Type `screen -ls` to get a list of the screens running. Your daemon will normally be the bottom one on the list. To enter our daemon run the following command, replacing `<port number>` with the number that corresponds with your daemon:
+Log in (if not already connected) as the `snode` user on the VPS running the service node, then start
+the registration process by running the following interactive command:
 
 ```
-screen -x <port number>
-```
-
-To start the registration process we are going to run the following interactive command within the daemon terminal:
-
-```
-prepare_registration
+~/loki-linux-x64-v2.0.3/lokid prepare_registration
 ```
 
 The terminal will prompt the operator to specify if they will contribute the entire stake, because we are running this as a pooled Service Node we will type `n` and click enter.
@@ -517,10 +547,10 @@ Copy the whole line of text in your daemon and paste it into your notepad as we 
 
 You have 2 weeks from the moment of registering the Service Node to run the `register_service_node` command, however it is advised to do it as soon as possible.
 
-Before we leave the daemon run the following command to get our `<Service Node Public Key>` and save it in your notepad:
+Before you disconnect from your VPS run the following command to get your `<Service Node Public Key>` and save it in your notepad:
 
 ```
-print_sn_key
+~/loki-linux-x64-v2.0.3/lokid print_sn_key
 ```
 
 Run through step 5 once more to open our Loki wallet. Once we are in our wallet run the command the daemon outputted for us when we prepared our Service Node. The wallet will prompt us to confirm our password, then the amount of Loki to stake. Confirm this by typing `y` and clicking enter.
@@ -528,7 +558,7 @@ Run through step 5 once more to open our Loki wallet. Once we are in our wallet 
 Alternatively, the operator can also include the `auto` command, when staking this will create a wallet which runs as a background process and automatically signs a register transaction each 30 days, so the contributor need not sign a new transaction manually each registration period.
 
 ```
-register_service_node auto args.....
+~/loki-linux-x64-v2.0.3/lokid print_sn_status
 ```
 
 > If you run the `auto` command the wallet will close pushing the process into the background. See additional information at the end of this guide to learn how to stop the auto command.
@@ -571,12 +601,10 @@ Congratulations, you are now staking.
 
 After we have locked your collateral we will need to check if our Service Node Pubkey is sitting in the list with the other Service Node’s on the network. This will prove our Service Node is running, recognised and will receive a reward if it keeps running.
 
-Let’s go into our daemon screen by typing `screen -x <port number>`. To find the port number use `screen -ls` and your daemon should be sitting at the bottom of the list.
-
-Once we are in the daemon again we can run the following command to see our Service Node Public Key:
+Connect to the VPS where the service node is running and run the following command to see our Service Node Public Key:
 
 ```
-print_sn_key
+~/loki-linux-x64-v2.0.3/lokid print_sn_key
 ```
 
 The Service Node Public Key is used to identify our Service Node within the list of Service Nodes currently on the network. 
@@ -585,9 +613,9 @@ You can jump onto [https://lokiblocks.com/](https://lokiblocks.com/) to see if y
 
 >If you are running your Service Node on testnet go to [https://lokitestnet.com/](https://lokitestnet.com/) instead.
 
-We will want to know the current block height, type `status` into the daemon and it will output this information. Once we have the block height we can then check the current Service Nodes on the network at our specified block height.
+To check this information directly with the service node itself, first get the current block height by running `~/loki-linux-x64-v2.0.3/lokid status` into the terminal: it will output this information. Once we have the block height we can then check the current Service Nodes on the network at our specified block height.
 
-Run the command `print_quorum_state <block height>` replacing `<block height>` with the number minus 1 that was outputted when running `status` command. 
+Run the command `~/loki-linux-x64-v2.0.3/lokid print_quorum_state <block height>` replacing `<block height>` with the number minus 1 that was outputted when running `status` command.
 
 If your `<Service Node Pubkey>` is sitting in the list you know you are now staking.
 
@@ -682,27 +710,50 @@ sudo apt-get install unzip
 unzip loki-linux-x64-<VERSION>.zip
 ```
 
-**8. Run Loki in a screen and Detach**
+**8. Set up Loki to run as a service**
 
 ```
-screen
+sudo nano /etc/systemd/system/lokid.service
 ```
 
+Paste the following:
 ```
-cd loki-linux-x64-<VERSION>
+Description=lokid service node
+After=network-online.target
+
+[Service]
+Type=simple
+User=snode
+ExecStart=/home/snode/loki-linux-x64-v2.0.3/lokid --non-interactive --service-node
+Restart=always
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
 ```
 
+Save and exit:
+`CTRL+X -> Y -> ENTER`
+
+Enable and start the service:
 ```
-./lokid --service-node
+sudo systemctl daemon-reload
+sudo systemctl enable lokid.service
+sudo systemctl start lokid.service
 ```
 
-`Ctrl +AD`
+Wait for the Loki Daemon sync the blockchain (1 - 8 Hours depending on internet speed).  You can
+watch the progress using:
 
-Wait for the Loki Daemon sync the blockchain (1 - 8 Hours depending on internet speed).
+```
+sudo journalctl -u lokid.service -af
+```
+
+Hit `Ctrl-C` when you are tired of watching.
 
 **9. Open a Wallet**
 
-This wallet can be in a screen on the Service Node machine, or a wallet on your local computer (assuming you have downloaded the binaries).
+This wallet can be in a `screen` session on the Service Node machine, or a wallet on your local computer (assuming you have downloaded the binaries locally).
 
 ```
 cd loki-linux-x64-<VERSION>
@@ -729,14 +780,10 @@ Send enough Loki to fund a node, wait for Balance to be unlocked (20 mins, 10 co
 
 **10. Register your Service Node**
 
-On your Service Node reattach to the screen which has the Service Node running.  
+Connect via SSH to your VPS with the Service Node running (`snode@<ipaddress>`).
 
 ```
-screen -r
-```
-
-```
-prepare_registration
+~/loki-linux-x64-v2.0.3/lokid prepare_registration
 ```
 
 Contribute entire Stake: `Y/N`
@@ -755,23 +802,21 @@ Copy green registration message
 
 Paste in registration message `<enter>`
 
-**12 Attach Back to Service Node Daemon**
+**12 Connect back to Service Node VPS account**
 
 ```
-screen -r
-```
-```
-print_sn_key
+~/loki-linux-x64-v2.0.3/lokid print_sn_key
 ```
 
 Copy service node key, and search for it on:
 
 [https://lokiblocks.com/service_nodes](https://lokiblocks.com/service_nodes).
 
-`CTRL +AD`
+or check the detailed status from your VPS using:
 
-`ctrl +AD` detaches screen and runs your Loki Service Node in background this is critical.
-
+```
+~/loki-linux-x64-v2.0.3/lokid print_sn_key
+```
 
 ## Conclusion
 
