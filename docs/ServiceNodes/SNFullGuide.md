@@ -263,7 +263,9 @@ Instead we will configure the Loki daemon as a system service which makes it aut
 if the server reboots, and restarts it automatically if it crashes for some reason.
 
 <ol>
-<li>Create the lokid.service file: <code>sudo nano /etc/systemd/system/lokid.service</code></li>
+<li>Create the lokid.service file:
+<pre><code>sudo nano /etc/systemd/system/lokid.service</code></pre>
+</li>
 <li>Copy the text below and paste it into your new file:</li>
 </ol>
 <pre><code>[Unit]
@@ -280,30 +282,33 @@ RestartSec=30s
 [Install]
 WantedBy=multi-user.target
 </code></pre>
+
 <ol start="3">
-<li>If you chose a username other than `snode` then change `snode` in the `User=` and `ExecStart=` lines to the alternative username.</li>
+<li>If you chose a username other than <code>snode</code> then change <code>snode</code> in the <code>User=</code> and <code>ExecStart=</code> lines to the alternative username.</li>
 </ol>
-<blockquote>
-(If you want to run a testnet service node, append ` --testnet` to the end of the ExecStart line.  Alternatively, if you want to be able to run both a testnet and mainnet service node simultaneously
-you can use two service files: `lokid.service` and `lokid-testnet.service` and add ` --testnet` to the `ExecStart=` line in the latter.  You would then use `lokid-testnet.service` instead of
-`lokid.service` in the commands below when you want to control the testnet service node.)
-</blockquote>
+
+>(If you want to run a testnet service node, append ` --testnet` to the end of the ExecStart line.  Alternatively, if you want to be able to run both a testnet and mainnet service node simultaneously
+>you can use two service files: `lokid.service` and `lokid-testnet.service` and add ` --testnet` to the `ExecStart=` line in the latter.  You would then use `lokid-testnet.service` instead of
+>`lokid.service` in the commands below when you want to control the testnet service node.)
+
 <ol start="4">
 <li>
 <p>Once completed, save the file and quit nano:
-CTRL+X -&gt; Y -&gt; ENTER</p>
+CTRL+X -&gt; Y -&gt; ENTER.</p>
 </li>
+
 <li>
-<p>Reload systemd manager configuration (to make it re-read the new service file):
-<code>sudo systemctl daemon-reload</code></p>
+<p>Reload systemd manager configuration (to make it re-read the new service file):</p>
+<pre><code>sudo systemctl daemon-reload</code></pre>
 </li>
-<li>
-<p>Enable lokid.service so that it starts automatically upon boot:
-<code>sudo systemctl enable lokid.service</code></p>
+
+<li><p>Enable lokid.service so that it starts automatically upon boot:</p>
+<pre><code>sudo systemctl enable lokid.service</code></pre>
 </li>
+
 <li>
 <p>Start lokid.service:
-<code>sudo systemctl start lokid.service</code></p>
+<pre><code>sudo systemctl start lokid.service</code></pre></p>
 </li>
 </ol>
 
