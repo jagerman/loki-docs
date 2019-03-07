@@ -176,7 +176,7 @@ sudo apt upgrade
 
 You will be prompted to authorise the use of disk space, type `y` and enter to authorise.
 
-If you are prompted during the upgrade that new a version of any file is available then click the up and down arrows until you are hovering over `install the package maintainer’s version` and click enter.
+If you are prompted during the upgrade that a new version of any file is available then click the up and down arrows until you are hovering over `install the package maintainer’s version` and click enter.
 
 <center>![Terminal window](../assets/snode2.JPG)</center>
 
